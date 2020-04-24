@@ -1,0 +1,35 @@
+{
+  "plugins": [
+    "addcssjs",
+    "richquotes",
+    "prism",
+    "-hightlight",
+    "anchors"
+  ],
+  "pluginsConfig": {
+    "addcssjs": {
+      "js": [
+        "./scripts/mermaid.min.js",
+        "./scripts/index.js"
+      ],
+      "css": [
+      ]
+    },
+    "prism": {
+      "css": [
+        "prismjs/themes/prism-okaidia.css"
+      ],
+      "lang": {
+        "oc": "objectivec",
+        "objc": "objectivec",
+        "objective-c": "objectivec"
+      },
+      "ignore": [
+        "sequence"
+      ]
+    },
+    "theme-default": {
+      "showLevel": true
+    }
+  }
+}
