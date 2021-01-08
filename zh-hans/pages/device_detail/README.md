@@ -202,7 +202,7 @@ class TYMessageCenterTest: NSObject,TYSmartHomeDataProtocol{
  TuyaSmartDevice * device = [TuyaSmartDevice deviceWithDeviceId:@"设备 id"]
   [impl gotoDeviceDetailDetailViewControllerWithDevice: device.deviceModel group: nil];
   //如果是群组，new TuyaSmartGroup
- TuyaSmartGroup * group = [TuyaSmartDevice groupWithGroupId:@"群组 id"]
+   TuyaSmartGroup * group = [TuyaSmartGroup groupWithGroupId:@"群组 id"]
    [impl gotoDeviceDetailDetailViewControllerWithDevice: nil group: group.deviceModel];
 
 

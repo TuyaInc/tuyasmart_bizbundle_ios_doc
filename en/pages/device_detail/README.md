@@ -257,7 +257,7 @@ Jump to the device details page and push |TuyaSmartDeviceModel/TuyaSmartGroupMod
  TuyaSmartDevice * device = [TuyaSmartDevice deviceWithDeviceId:@"device id"]
   [impl gotoDeviceDetailDetailViewControllerWithDevice: device.deviceModel group: nil];
   //If it is a group, new TuyaSmartGroup
- TuyaSmartGroup * group = [TuyaSmartDevice groupWithGroupId:@"group id"]
+ TuyaSmartGroup * group = [TuyaSmartGroup groupWithGroupId:@"group id"]
    [impl gotoDeviceDetailDetailViewControllerWithDevice: nil group: group.deviceModel];
 
 
