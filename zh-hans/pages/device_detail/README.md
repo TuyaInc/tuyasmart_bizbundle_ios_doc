@@ -90,7 +90,7 @@ value: 下面的数组
 ```js
  {
   "deviceDetail": [{"type":"header"  } ],
- " 其他配置页面key":[xxxxx ]
+  "其他配置页面key":[ ]
   }
 ```
 

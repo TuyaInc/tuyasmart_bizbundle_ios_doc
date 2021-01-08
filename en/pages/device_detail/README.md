@@ -93,7 +93,7 @@ value: the following array
 ```js
  {
   "deviceDetail": [{"type":"header"} ],
- "Other configuration page key":[xxxxx]
+  "Other configuration page key":[]
   }
 ```
 
