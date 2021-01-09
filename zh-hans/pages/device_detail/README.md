@@ -225,3 +225,201 @@ impl?.gotoDeviceDetailNetworkViewController(withDeviceId: "设备 id")
 
 
 ```
+
+```
+###6.自定义子功能
+####1.配置configList.json
+ 在configList.json文件的deviceDetail插入自定义type。**注意type值必须以“c_”开头**
+ 如例：插入"c_test_insert"、"c_test_async_insert"
+ ```
+ {"deviceDetail": [
+     {
+            "type":"c_test_insert"
+        },
+        {
+            "type":"c_test_async_insert"
+        },
+        {
+            "type":"header"
+        },
+        {
+            "type": "device_info"
+        },
+        {
+            "type": "net_setting"
+        },
+        {
+            "type":"section_off_line_warn"
+        },
+        {
+            "type":"off_line_warn"
+        },
+        {
+            "type":"section_other"
+        },
+        {
+            "type":"help_and_feedback"
+        },
+        {
+            "type":"check_device_network"
+        },
+        {
+            "type":"check_firmware_update"
+        },
+        {
+            "type":"empty",
+            "height":16
+        },
+        {
+            "type":"footer"
+        }
+    ]
+  ],}
+  ```
+  ####2.返回item数据
+  #####接口说明：同步返回item数据
+   ```
+  /// 设置-》同步处理item插入的回调。insertDevMenuItemBlock会在设备详情刷新时候回调
+-(void)insertDevMenuItem:(InsertDevMenuItemBlock) insertDevMenuItemBlock;
+ ```
+  ```
+  
+//@param type configList.json里自己添加的type
+//@param device  设备模型
+//@param group   群组模型。 根据group是否为nil，来判断设备还是群组
+//@return 遵守TYDeviceDetailCustomMenuModel协议的对象。返回nil，该type的item则不会显示
+typedef id<TYDeviceDetailCustomMenuModel> _Nullable (^InsertDevMenuItemBlock)(NSString*  _Nonnull type,
+                                                                           TuyaSmartDeviceModel* _Nullable device,
+                                                                           TuyaSmartGroupModel* _Nullable group);
+  ```
+  
+  #####接口说明：异步回调item数据
+  
+   ``` 
+  /// 设置-》异步处理item插入的回调，insertDevMenuItemAsyncBlock会在设备详情刷新时候回调
+-(void)insertDevMenuItemAsync:(InsertDevMenuItemAsyncBlock) insertDevMenuItemAsyncBlock;
+  ```
+ ``` 
+ //异步处理item插入，当异步操作结束以后，调用complete(id<TYDeviceDetailCustomMenuMode>),回调数据给设备详情，并进行刷新列表。
+typedef void (^InsertDevMenuItemAsyncBlock)(NSString* _Nonnull type,
+                                            TuyaSmartDeviceModel* _Nullable device,
+                                            TuyaSmartGroupModel* _Nullable group,
+                                            InsertDevMenuItemComplete _Nonnull complete);
+``` 
+  
+  #####示例代码
+  
+  **第一步：先新建一个Model类，遵守TYDeviceDetailCustomMenuModel协议**
+  
+  **  oc**
+   ```
+  //自定义一个类遵守TYDeviceDetailCustomMenuModel协议
+ @interface CustomMenuModel : NSObject<TYDeviceDetailCustomMenuModel>
+///标题
+@property (nonatomic,copy) NSString *title;
+///子标题
+@property (nonatomic,copy) NSString *detail;
+@end
+
+@implementation CustomMenuModel
+@end
+```
+**swift**
+```
+class CustomMenuModel: NSObject, TYDeviceDetailCustomMenuModel{
+    var title : String?
+    var detail : String?
+}
+  ```
+  ** 第二步：设置数据回调的block**
+   **  oc**
+   ```
+   id<TYDeviceDetailProtocol> impl = [[TuyaSmartBizCore sharedInstance] serviceOfProtocol:@protocol(TYDeviceDetailProtocol)];
+        
+        [impl insertDevMenuItem:^ id<TYDeviceDetailCustomMenuModel> (NSString * _Nonnull type, TuyaSmartDeviceModel * _Nonnull device, TuyaSmartGroupModel * _Nonnull group) {
+            if ([type isEqualToString:@"c_test_insert"]) {
+                CustomMenuModel *model = [CustomMenuModel new];
+                if (group) { //根据group是否为nil，来判断设备还是群组
+                    model.title = type;
+                    model.detail = @"group";
+                }else{
+                    model.title = type;
+                    model.detail = @"device";
+                }
+                return model;
+            }
+            return nil;
+        }];
+        
+        [impl insertDevMenuItemAsync:^(NSString * _Nonnull type, TuyaSmartDeviceModel * _Nonnull device, TuyaSmartGroupModel * _Nonnull group, InsertDevMenuItemComplete  _Nonnull complete) {
+            if ([type isEqualToString:@"c_test_async_insert"]) {
+            //耗时操作
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                CustomMenuModel *model = [CustomMenuModel new];
+                if (group) { //根据group是否为nil，来判断设备还是群组
+                    model.title = type;
+                    model.detail = @"group";
+                }else{
+                    model.title = type;
+                    model.detail = @"device";
+                }
+                complete(model);
+            });
+            }
+
+        }];
+ ```
+ **swift**
+  ```
+   let impl = TuyaSmartBizCore.sharedInstance().service(of: TYDeviceDetailProtocol.self) as? TYDeviceDetailProtocol
+   
+    impl?.insertDevMenuItem({ (type, deviceModel, groupModel) -> TYDeviceDetailCustomMenuModel? in
+            if type == "c_test_insert" {//根据group是否为nil，来判断设备还是群组
+                let model = CustomMenuModel.init()
+                if groupModel != nil {
+                    model.title = type
+                    model.detail = "group"
+                }else{
+                    model.title = type
+                    model.detail = "device"
+                }
+                return model;
+            }
+            return nil;
+        })
+
+impl?.insertDevMenuItemAsync({ (type, deviceModel, groupModel, complete) in
+            if type == "c_test_async_insert" {
+                //耗时操作
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    let model = CustomMenuModel.init()
+                    if groupModel != nil {
+                        model.title = type
+                        model.detail = "group"
+                    }else{
+                        model.title = type
+                        model.detail = "device"
+                    }
+                    complete(model);
+                }
+            }
+        });
+  ```
+ ####3.插入item点击事件处理
+   #####oc示例代码
+  ```
+      id<TYDeviceDetailProtocol> impl = [[TuyaSmartBizCore sharedInstance] serviceOfProtocol:@protocol(TYDeviceDetailProtocol)];
+        [impl clickMenuItem: ^(NSString * _Nonnull type, TuyaSmartDeviceModel * _Nonnull device, TuyaSmartGroupModel * _Nonnull group) {
+            NSLog(@"clickItem:  type:%@",type);
+        }];
+```
+ 
+   #####swift示例代码
+
+```
+ let impl = TuyaSmartBizCore.sharedInstance().service(of: TYDeviceDetailProtocol.self) as? TYDeviceDetailProtocol
+
+  impl?.clickMenuItem({ (type, deviceModel, groupModel) in
+            print("clickItem:  type:"+type);
+    })
+ ```
