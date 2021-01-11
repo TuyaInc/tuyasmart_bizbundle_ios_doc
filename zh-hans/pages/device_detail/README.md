@@ -227,7 +227,7 @@ impl?.gotoDeviceDetailNetworkViewController(withDeviceId: "设备 id")
 
 ```
 
-```
+
 ###6.自定义子功能
 ####1.配置configList.json
  在configList.json文件的deviceDetail插入自定义type。**注意type值必须以“c_”开头**
