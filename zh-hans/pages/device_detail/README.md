@@ -311,7 +311,7 @@ typedef void (^InsertDevMenuItemAsyncBlock)(NSString* _Nonnull type,
   
   **第一步：先新建一个Model类，遵守TYDeviceDetailCustomMenuModel协议**
   
-  **  oc**
+  **oc**
    ```
   //自定义一个类遵守TYDeviceDetailCustomMenuModel协议
  @interface CustomMenuModel : NSObject<TYDeviceDetailCustomMenuModel>
@@ -331,8 +331,9 @@ class CustomMenuModel: NSObject, TYDeviceDetailCustomMenuModel{
     var detail : String?
 }
   ```
-  ** 第二步：设置数据回调的block**
-   **  oc**
+**第二步：设置数据回调的block**
+
+ **oc**
    ```
    id<TYDeviceDetailProtocol> impl = [[TuyaSmartBizCore sharedInstance] serviceOfProtocol:@protocol(TYDeviceDetailProtocol)];
         

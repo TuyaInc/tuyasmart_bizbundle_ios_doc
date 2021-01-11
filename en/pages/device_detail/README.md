@@ -368,7 +368,7 @@ typedef void (^InsertDevMenuItemAsyncBlock)(NSString* _Nonnull type,
   
   **First step: Create a new Model class first, comply with the TYDeviceDetailCustomMenuModel protocol**
   
-  ** oc**
+  **oc**
    ```
   //Customize a class to comply with the TYDeviceDetailCustomMenuModel protocol
  @interface CustomMenuModel: NSObject<TYDeviceDetailCustomMenuModel>
@@ -390,8 +390,9 @@ class CustomMenuModel: NSObject, TYDeviceDetailCustomMenuModel{
   ```
 
 
-** Step 2: Set the data callback block**
-   ** oc**
+**Step 2: Set the data callback block**
+
+**oc**
    ```
    id<TYDeviceDetailProtocol> impl = [[TuyaSmartBizCore sharedInstance] serviceOfProtocol:@protocol(TYDeviceDetailProtocol)];
         
