@@ -88,7 +88,7 @@ value: the following array
 ```js
  {
   "deviceDetail": [{"type":"header"} ],
- "Other configuration page key":[xxxxx]
+  "Other configuration page key":[]
   }
 ```
 
@@ -252,7 +252,7 @@ Jump to the device details page and push |TuyaSmartDeviceModel/TuyaSmartGroupMod
  TuyaSmartDevice * device = [TuyaSmartDevice deviceWithDeviceId:@"device id"]
   [impl gotoDeviceDetailDetailViewControllerWithDevice: device.deviceModel group: nil];
   //If it is a group, new TuyaSmartGroup
- TuyaSmartGroup * group = [TuyaSmartDevice groupWithGroupId:@"group id"]
+ TuyaSmartGroup * group = [TuyaSmartGroup groupWithGroupId:@"group id"]
    [impl gotoDeviceDetailDetailViewControllerWithDevice: nil group: group.deviceModel];
 
 
@@ -276,3 +276,209 @@ impl?.gotoDeviceDetailNetworkViewController(withDeviceId: "Device id")
 
 
 ```
+
+### 6. Custom sub-function
+#### 1. Configure configList.json
+ Insert a custom type in the deviceDetail of the configList.json file. **Note that the type value must start with "c_"**
+ For example: insert "c_test_insert", "c_test_async_insert"
+
+ ```
+ {"deviceDetail": [
+     {
+            "type":"c_test_insert"
+        },
+        {
+            "type":"c_test_async_insert"
+        },
+        {
+            "type":"header"
+        },
+        {
+            "type": "device_info"
+        },
+        {
+            "type": "net_setting"
+        },
+        {
+            "type":"section_off_line_warn"
+        },
+        {
+            "type":"off_line_warn"
+        },
+        {
+            "type":"section_other"
+        },
+        {
+            "type":"help_and_feedback"
+        },
+        {
+            "type":"check_device_network"
+        },
+        {
+            "type":"check_firmware_update"
+        },
+        {
+            "type":"empty",
+            "height":16
+        },
+        {
+            "type":"footer"
+        }
+    ]
+  ],}
+  ```
+
+
+####2. Return item data
+  #####Interface description: return item data synchronously
+   ```
+  /// Settings-"Synchronous processing of item insertion callbacks. insertDevMenuItemBlock will call back when the device details are refreshed
+-(void)insertDevMenuItem:(InsertDevMenuItemBlock) insertDevMenuItemBlock;
+ ```
+  ```
+  
+//@param type configList.json added type
+//@param device device model
+//@param group group model. According to whether the group is nil, to judge the device or the group
+//@return An object that complies with the TYDeviceDetailCustomMenuModel protocol. Return nil, the item of this type will not be displayed
+typedef id<TYDeviceDetailCustomMenuModel> _Nullable (^InsertDevMenuItemBlock)(NSString* _Nonnull type,
+                                                                           TuyaSmartDeviceModel* _Nullable device,
+                                                                           TuyaSmartGroupModel* _Nullable group);
+  ```
+  
+  #####Interface description: Asynchronous callback item data
+  
+   ```
+  /// Settings-"Asynchronous processing of item insertion callbacks, insertDevMenuItemAsyncBlock will call back when the device details are refreshed
+-(void)insertDevMenuItemAsync:(InsertDevMenuItemAsyncBlock) insertDevMenuItemAsyncBlock;
+  ```
+ ```
+ //Process item insertion asynchronously. When the asynchronous operation ends, call complete(id<TYDeviceDetailCustomMenuMode>), call back the data to the device details, and refresh the list.
+typedef void (^InsertDevMenuItemAsyncBlock)(NSString* _Nonnull type,
+                                            TuyaSmartDeviceModel* _Nullable device,
+                                            TuyaSmartGroupModel* _Nullable group,
+                                            InsertDevMenuItemComplete _Nonnull complete);
+```
+
+#####Sample Code
+  
+  **First step: Create a new Model class first, comply with the TYDeviceDetailCustomMenuModel protocol**
+  
+  **oc**
+   ```
+  //Customize a class to comply with the TYDeviceDetailCustomMenuModel protocol
+ @interface CustomMenuModel: NSObject<TYDeviceDetailCustomMenuModel>
+///title
+@property (nonatomic,copy) NSString *title;
+///Subtitle
+@property (nonatomic,copy) NSString *detail;
+@end
+
+@implementation CustomMenuModel
+@end
+```
+**swift**
+```
+class CustomMenuModel: NSObject, TYDeviceDetailCustomMenuModel{
+    var title: String?
+    var detail: String?
+}
+  ```
+
+
+**Step 2: Set the data callback block**
+
+**oc**
+   ```
+   id<TYDeviceDetailProtocol> impl = [[TuyaSmartBizCore sharedInstance] serviceOfProtocol:@protocol(TYDeviceDetailProtocol)];
+        
+        [impl insertDevMenuItem:^ id<TYDeviceDetailCustomMenuModel> (NSString * _Nonnull type, TuyaSmartDeviceModel * _Nonnull device, TuyaSmartGroupModel * _Nonnull group) {
+            if ([type isEqualToString:@"c_test_insert"]) {
+                CustomMenuModel *model = [CustomMenuModel new];
+                if (group) {//Judging whether the device is a group or not according to whether the group is nil
+                    model.title = type;
+                    model.detail = @"group";
+                }else{
+                    model.title = type;
+                    model.detail = @"device";
+                }
+                return model;
+            }
+            return nil;
+        }];
+        
+        [impl insertDevMenuItemAsync:^(NSString * _Nonnull type, TuyaSmartDeviceModel * _Nonnull device, TuyaSmartGroupModel * _Nonnull group, InsertDevMenuItemComplete _Nonnull complete) {
+            if ([type isEqualToString:@"c_test_async_insert"]) {
+            //Time-consuming operation
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                CustomMenuModel *model = [CustomMenuModel new];
+                if (group) {//Judging whether the device is a group or not according to whether the group is nil
+                    model.title = type;
+                    model.detail = @"group";
+                }else{
+                    model.title = type;
+                    model.detail = @"device";
+                }
+                complete(model);
+            });
+            }
+
+        }];
+ ```
+
+
+**swift**
+  ```
+   let impl = TuyaSmartBizCore.sharedInstance().service(of: TYDeviceDetailProtocol.self) as? TYDeviceDetailProtocol
+   
+    impl?.insertDevMenuItem({ (type, deviceModel, groupModel) -> TYDeviceDetailCustomMenuModel? in
+            if type == "c_test_insert" {//According to whether the group is nil, to determine whether the device or the group
+                let model = CustomMenuModel.init()
+                if groupModel != nil {
+                    model.title = type
+                    model.detail = "group"
+                }else{
+                    model.title = type
+                    model.detail = "device"
+                }
+                return model;
+            }
+            return nil;
+        })
+
+impl?.insertDevMenuItemAsync({ (type, deviceModel, groupModel, complete) in
+            if type == "c_test_async_insert" {
+                //Time-consuming operation
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                    let model = CustomMenuModel.init()
+                    if groupModel != nil {
+                        model.title = type
+                        model.detail = "group"
+                    }else{
+                        model.title = type
+                        model.detail = "device"
+                    }
+                    complete(model);
+                }
+            }
+        });
+  ```
+
+####3. Insert item click event processing
+   #####oc sample code
+  ```
+      id<TYDeviceDetailProtocol> impl = [[TuyaSmartBizCore sharedInstance] serviceOfProtocol:@protocol(TYDeviceDetailProtocol)];
+        [impl clickMenuItem: ^(NSString * _Nonnull type, TuyaSmartDeviceModel * _Nonnull device, TuyaSmartGroupModel * _Nonnull group) {
+            NSLog(@"clickItem: type:%@",type);
+        }];
+```
+ 
+#####swift sample code
+
+```
+ let impl = TuyaSmartBizCore.sharedInstance().service(of: TYDeviceDetailProtocol.self) as? TYDeviceDetailProtocol
+
+  impl?.clickMenuItem({ (type, deviceModel, groupModel) in
+            print("clickItem: type:"+type);
+    })
+ ```
