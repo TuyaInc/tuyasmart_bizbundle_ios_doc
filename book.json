@@ -4,20 +4,28 @@
     "richquotes",
     "prism",
     "-hightlight",
-    "anchors"
+    "anchors",
+    "js-sequence-diagram-full@>=0.3.1",
+    "splitter",
+    "github",
+    "anchor-navigation-ex",
+    "expandable-chapters-small",
+    "pageview-count",
+    "language-picker",
+    "hide-element"
   ],
   "pluginsConfig": {
     "addcssjs": {
       "js": [
-        "./scripts/mermaid.min.js",
-        "./scripts/index.js"
+        "../scripts/mermaid.min.js",
+        "../scripts/index.js"
       ],
       "css": [
       ]
     },
     "prism": {
       "css": [
-        "prismjs/themes/prism-okaidia.css"
+        "prismjs/themes/prism.css"
       ],
       "lang": {
         "oc": "objectivec",
@@ -25,11 +33,19 @@
         "objective-c": "objectivec"
       },
       "ignore": [
-        "sequence"
       ]
     },
+    "github": {
+      "url": "https://github.com/TuyaInc/tuyasmart_bizbundle_ios_doc"
+    },
+    "anchor-navigation-ex": {
+      "showGoTop": true
+    },
+    "hide-element": {
+      "elements": [".gitbook-link"]
+    },
     "theme-default": {
-      "showLevel": true
+      "showLevel": false
     }
   }
 }

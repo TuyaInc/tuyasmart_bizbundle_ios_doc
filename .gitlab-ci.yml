@@ -1,0 +1,24 @@
+deploy:
+  tags:
+    - bizbundle
+  only:
+    - develop
+  script:
+    - users
+    - cd ~/code/gitbook/tuyasmartbizbundledoc
+    - git checkout develop
+    - git pull
+
+public:
+  tags:
+    - gitbook
+  only:
+    - master
+  script:
+    - REMOTE_GITHUB=$(echo `git remote -v | grep github | wc -l`)
+    - if [ "$REMOTE_GITHUB" == "0" ]; then git remote add github git@github.com:TuyaInc/tuyasmart_bizbundle_ios_doc.git; fi
+    - git remote -v
+    - git checkout master
+    - git pull origin master
+    - git pull github master
+    - git push -u github master
